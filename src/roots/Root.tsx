@@ -1,8 +1,11 @@
-import { Outlet, redirect, Form, useLoaderData, useSubmit } from 'react-router-dom'
+import {useState} from "react";
+import { Outlet, redirect, Form, useLoaderData, useSubmit } from 'react-router-dom';
 import { ContactIcon, Button } from '../components/componentMain';
 import {AiOutlineSearch} from 'react-icons/ai';
 import localforage from 'localforage';
 import { matchSorter } from 'match-sorter';
+
+import onlineEvents from '../firebase';
 
 import './root.css'
 
@@ -14,38 +17,32 @@ export async function action() {
     events.unshift(event);
     await localforage.setItem("events", events);
 
-    return redirect(`/events/${event.id}/edit`);
+    return redirect(`events/${event.id}/edit`);
 } 
 
 export async function loader({request}: any){
-    let bob = { 
-        name: "Bob éponge", 
-        url: "https://bob-leponge.fandom.com/fr/wiki/Bob_l%27%C3%A9ponge",
-        avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQL1TG2Q9tHrYKGdVFdXa9Lc0x4RdJzQ2ySwA&usqp=CAU",
-        description: "Un éponge qui vit dans la mer, et qui a un voisin qui s'appelle 'Patrick'",
-        feedback: "I like Bob éponge, Nice one",
-        createdAt: Date.now(),
-        id: Math.random().toString(36).substring(2, 9),
-    }
+    let localEvents = await localforage.getItem("events") as eventProps[];
     const url = new URL(request.url);
     const q= url.searchParams.get("q");
-    let events = await localforage.getItem("events") as any;
 
-    if(events === null || events.length === 0) {
-        events = [];
-        events.unshift(bob);
-        await localforage.setItem("events", events);
-        return {events, q}
+    if(localEvents === null) {
+        localEvents = [];
+        await localforage.setItem("events", []);
+        return {localEvents, q, onlineEvents}
     };
     if(q) {
-        events = matchSorter(events, q, {keys: ["name"]})
+        localEvents = matchSorter(localEvents, q, {keys: ["name"]})
     }
-    return {events, q};
+    return {localEvents, q, onlineEvents};
 }
 
 function Root() {
-    const {events, q} = useLoaderData() as any;
+    const {localEvents:events, q, onlineEvents} = useLoaderData() as any;
     const submit = useSubmit();
+
+    const [displayOnline, setDisplayOnline ] = useState(false);
+    const setOnline = () => setDisplayOnline(true);
+    const setLocal = () => setDisplayOnline(false);
     return (
         <div className='root'>
             <div className="root-left">
@@ -69,17 +66,26 @@ function Root() {
                         <Button title="New" type="submit" />
                     </Form>
                 </div>
-                {events.length ? (
-                    <div className='root-left-list'>
-                        {events.map((event:any) => (
-                            <ContactIcon event={event} title={event.name} key={event.id}/>
-                        ))}
+                <div className='root-left-list'>
+                    <div className="root-left-list-options">
+                        <button onClick={setLocal} className={displayOnline ? "buttonClicked" : ""}>Local</button>
+                        <button onClick={setOnline} className={!displayOnline ? "buttonClicked" : ""}>Online</button>
                     </div>
-                ) : (
-                    <p>
-                    <i>No contacts</i>
-                    </p>
-                )}
+                    {
+                        displayOnline ?
+                            <div className="root-left-list-online" >
+                                {onlineEvents.map((event:eventProps) => (
+                                    <ContactIcon event={event} title={event.name} key={event.id}/>
+                                ))}    
+                            </div>
+                        :
+                            <div className="root-left-list-local">
+                                {events.length !== 0 && events.map((event:eventProps) => (
+                                    <ContactIcon event={event} title={event.name} key={event.id}/>
+                                ))}
+                            </div>
+                    }
+                </div>
             </div>
             <div className="root-right">
                 <Outlet />

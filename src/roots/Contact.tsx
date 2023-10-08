@@ -1,19 +1,16 @@
 import {useLoaderData, useNavigate, redirect} from 'react-router-dom';
 import localforage from 'localforage';
 import Button from '../components/Button';
+import onlineEvents from '../firebase';
 
 import './contact.css';
-interface eventProps {
-    id: string,
-    avatar: string,
-    name:string,
-    url:string,
-    description:string,
-    feedback: string,
-} 
+
 export async function eventLoader({params}: { params: any }) {
     let events = await localforage.getItem("events") as eventProps[];
     let event = events.find((event:eventProps) => event.id === params.contactId);
+    if(!event) {
+        return onlineEvents.find((event:eventProps) => event.id === params.contactId)
+    }
     return event;
 }
 
@@ -30,11 +27,10 @@ export default function Contact() {
     const navigate = useNavigate();
 
     return (
-        <>
-        <div id="contact-back-icon">
-            <Button title="Close" type="submit" height="80px" width="200px" onClick={() => navigate(-1)} />
-        </div>
         <div className="contact">
+            <div id="contact-back-icon">
+                <Button title="Close" type="submit" height="40px" width="200px" onClick={() => navigate(-1)} />
+            </div>
             <div className="contact-head">
                 <div className="contact-head-avatar">
                     <img src={event.avatar} />
@@ -52,6 +48,5 @@ export default function Contact() {
                 <p>feedback: {event.feedback}</p>
             </div>
         </div>
-        </>
     )
 }

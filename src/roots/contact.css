@@ -1,4 +1,5 @@
 .contact{
+    position: relative;
     background-color: beige;
 
     height: 90%;
@@ -68,7 +69,7 @@
         display: block;
         position: absolute;
 
-        bottom: 10%;
+        bottom: 0%;
         right: 50%;
         translate: 50% ;
 

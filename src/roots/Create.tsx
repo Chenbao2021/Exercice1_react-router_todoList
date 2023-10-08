@@ -4,15 +4,6 @@ import localforage from "localforage";
 
 import "./create.css"
 
-interface eventProps {
-    id: string,
-    avatar: string,
-    name:string,
-    url:string,
-    description:string,
-    feedback: string,
-} 
-
 export async function editAction({request, params}: {request:any , params:any}) {
 
     const formData = await request.formData();
@@ -23,7 +14,7 @@ export async function editAction({request, params}: {request:any , params:any}) 
     Object.assign(event, updates);
     await localforage.setItem('events', events);
     
-    return redirect(`/events/${params.contactId}`);
+    return redirect(`/feedback/events/${params.contactId}`);
 }
 
 function Create() {

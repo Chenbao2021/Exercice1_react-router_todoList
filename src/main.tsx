@@ -2,7 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 import {
-  createBrowserRouter,
+  // createBrowserRouter,
+  createHashRouter,
   RouterProvider,
 } from "react-router-dom";
 
@@ -14,9 +15,9 @@ import { deleteAction } from './roots/delete';
 
 import './index.css'
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
-    path: "/feedback/",
+    path: "/",
     element: <Root />,
     errorElement: <ErrorPage position="root"/>,
     loader: loader,
@@ -30,19 +31,19 @@ const router = createBrowserRouter([
             element: <Index/>
           },
           {
-            path:"/feedback/events/:contactId",
+            path:"events/:contactId",
             element: <Contact />,
             loader: eventLoader,
             action: contactAction,
           },
           {
-            path:"/feedback/events/:contactId/edit",
+            path:"events/:contactId/edit",
             element:<Create />,
             loader: eventLoader,
             action: editAction,
           },
           {
-            path:"/feedback/events/:contactId/delete",
+            path:"events/:contactId/delete",
             action: deleteAction,
           }
         ]
